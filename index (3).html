@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="en-NZ">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dealer Page Performance Comparison | MeloYelo</title>
+<meta name="description" content="GA4 performance comparison of the MeloYelo Whangarei dealer page (new design) and Franklin dealer page (old design). 21 Mar 2026 to 18 Jun 2026." />
+
+<!-- Heebo: MeloYelo brand typeface -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+<!-- Chart.js via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<style>
+/* ============================================================
+   MeloYelo  ::  Dealer Page Performance Comparison
+   Single-file report. Brand tokens defined once below.
+   Logos are embedded data URIs. To swap, replace the src on
+   .brand-logo and .foot-logo (you can point them at
+   assets/meloyelo-logo.png).
+   ============================================================ */
+
+:root{
+  /* Surfaces */
+  --bg:#ffffff;
+  --bg-soft:#f7f8fa;
+  --bg-cream:#fdf9ea;          /* very light tint of brand cream */
+  --line:#e6e9ee;
+  --line-strong:#d7dce4;
+
+  /* Ink (charcoal-navy text) */
+  --ink:#1a2230;
+  --ink-700:#434c5b;
+  --ink-500:#6b7480;
+  --ink-400:#929aa6;
+
+  /* Brand */
+  --yellow:#ffdb00;
+  --yellow-deep:#e8c400;
+  --yellow-tint:#fff6cc;
+  --cream:#f0e4c2;
+
+  /* Page identity */
+  --green:#1caf32;            /* Whangarei  (fills, dots, bars, charts) */
+  --green-ink:#117a29;        /* Whangarei  (small text needing contrast) */
+  --green-tint:#e7f6ea;
+  --green-soft:#c9ecd1;
+  --navy:#34507a;             /* Franklin   (text + fills) */
+  --navy-tint:#ebeff6;
+  --navy-soft:#c5d2e6;
+
+  /* Radius + shadow (brand favours sharp, small radii) */
+  --r:4px;
+  --r-sm:2px;
+  --sh-sm:0 1px 2px rgba(20,30,45,.04), 0 1px 3px rgba(20,30,45,.05);
+  --sh-md:0 6px 22px rgba(20,30,45,.07), 0 1px 3px rgba(20,30,45,.04);
+  --sh-lg:0 18px 48px rgba(20,30,45,.13), 0 4px 12px rgba(20,30,45,.06);
+
+  /* Spacing scale (base unit 12) */
+  --s1:12px; --s2:24px; --s3:36px; --s4:48px; --s5:64px; --s6:80px;
+
+  --maxw:1180px;
+}
+
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;}
+body{
+  margin:0;
+  font-family:"Heebo",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  color:var(--ink-700);
+  background:var(--bg);
+  font-size:16px;
+  line-height:1.65;
+  font-variant-numeric:tabular-nums;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+h1,h2,h3,h4{color:var(--ink);margin:0;line-height:1.15;font-weight:800;letter-spacing:-.01em;}
+p{margin:0;}
+a{color:var(--green-ink);}
+img{max-width:100%;display:block;}
+
+.container{max-width:var(--maxw);margin:0 auto;padding:0 var(--s2);}
+.num{font-variant-numeric:tabular-nums;}
+
+/* ---------- Top hairline + header ---------- */
+.topbar{height:5px;background:linear-gradient(90deg,var(--yellow) 0%,var(--yellow) 72%,var(--green) 72%,var(--green) 100%);}
+.site-header{
+  border-bottom:1px solid var(--line);
+  background:var(--bg);
+  position:sticky;top:0;z-index:40;
+  backdrop-filter:saturate(140%) blur(6px);
+  background:rgba(255,255,255,.92);
+}
+.site-header .inner{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s2);
+  padding:15px 0;
+}
+.brand-logo{height:38px;width:auto;}
+.header-meta{
+  text-align:right;display:flex;align-items:center;gap:22px;
+}
+.hm-item{display:flex;flex-direction:column;gap:1px;text-align:right;}
+.header-meta .k{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-400);}
+.header-meta .v{font-size:13.5px;font-weight:700;color:var(--ink-700);}
+.hm-sep{width:1px;height:30px;background:var(--line);}
+
+/* ---------- Hero ---------- */
+.hero{
+  background:
+    radial-gradient(120% 120% at 100% 0%, var(--yellow-tint) 0%, rgba(255,246,204,0) 42%),
+    linear-gradient(180deg,var(--bg-cream) 0%,var(--bg) 70%);
+  border-bottom:1px solid var(--line);
+  padding:var(--s5) 0 var(--s4);
+}
+.eyebrow{
+  font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-500);margin-bottom:14px;display:flex;align-items:center;gap:10px;
+}
+.eyebrow::before{content:"";width:26px;height:2px;background:var(--yellow);display:inline-block;}
+.hero h1{
+  font-size:clamp(32px,5vw,52px);letter-spacing:-.025em;line-height:1.02;
+  max-width:17ch;font-weight:900;
+}
+.hero .subtitle{
+  margin-top:16px;font-size:clamp(16px,2.2vw,20px);font-weight:500;color:var(--ink-700);max-width:60ch;
+}
+.hero .subtitle b{font-weight:700;color:var(--ink);}
+.hero-meta{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:26px;}
+
+.pill{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--bg);border:1px solid var(--line-strong);
+  padding:8px 15px;border-radius:999px;font-size:13px;font-weight:600;color:var(--ink-700);
+}
+.pill.primary{background:var(--ink);border-color:var(--ink);color:#fff;}
+.pill.primary .pk{color:var(--yellow);}
+.pill .pk{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-400);}
+.pill .dot{width:7px;height:7px;border-radius:50%;}
+.legend{display:inline-flex;gap:18px;align-items:center;font-size:13px;font-weight:600;flex-wrap:wrap;}
+.legend span{display:inline-flex;align-items:center;gap:8px;color:var(--ink-700);}
+.swatch{width:11px;height:11px;border-radius:3px;display:inline-block;}
+.sw-w{background:var(--green);}
+.sw-f{background:var(--navy);}
+
+/* Verdict strip (signature element) */
+.verdict{
+  margin-top:var(--s3);
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border:1px solid var(--line-strong);border-radius:var(--r);overflow:hidden;background:var(--bg);
+  box-shadow:var(--sh-md);
+}
+.verdict .cell{padding:22px 24px;border-left:1px solid var(--line);position:relative;}
+.verdict .cell:first-child{border-left:0;}
+.verdict .cell::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;}
+.verdict .cell.green::before{background:var(--green);}
+.verdict .cell.navy::before{background:var(--navy);}
+.verdict .cell.gold::before{background:var(--yellow);}
+.verdict .lbl{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-500);}
+.verdict .win{font-size:21px;font-weight:800;color:var(--ink);margin-top:6px;letter-spacing:-.01em;}
+.verdict .sub{font-size:13px;color:var(--ink-500);margin-top:5px;}
+
+/* ---------- Contents ---------- */
+.contents{border-bottom:1px solid var(--line);background:var(--bg-soft);}
+.contents .inner{padding:26px 0 28px;}
+.ct-title{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-400);margin-bottom:16px;}
+.contents ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:2px 30px;counter-reset:toc;}
+.contents li{counter-increment:toc;}
+.contents a{display:flex;gap:11px;align-items:baseline;text-decoration:none;color:var(--ink-700);font-size:14px;font-weight:600;padding:6px 0;border-bottom:1px solid transparent;transition:color .15s;}
+.contents a::before{content:counter(toc,decimal-leading-zero);font-size:11.5px;font-weight:800;color:var(--ink-400);min-width:22px;letter-spacing:.02em;}
+.contents a:hover{color:var(--ink);}
+.contents a:hover::before{color:var(--green-ink);}
+
+/* ---------- Section scaffolding ---------- */
+.section{padding:var(--s5) 0;border-bottom:1px solid var(--line);}
+.section.alt{background:var(--bg-soft);}
+.section-head{display:flex;gap:22px;align-items:flex-start;max-width:840px;margin-bottom:var(--s3);}
+.sec-index{
+  flex:none;font-size:32px;font-weight:800;line-height:.95;color:var(--line-strong);
+  letter-spacing:-.02em;padding-top:3px;font-variant-numeric:tabular-nums;
+}
+.sec-index::after{content:"";display:block;width:24px;height:3px;background:var(--yellow);margin-top:12px;border-radius:2px;}
+.section-head .hgroup{flex:1;}
+.section-head .eyebrow{margin-bottom:10px;}
+.section-head .eyebrow::before{display:none;}
+.section-head h2{font-size:clamp(22px,3vw,30px);letter-spacing:-.02em;}
+.section-head .lead{margin-top:13px;color:var(--ink-700);font-size:16.5px;}
+
+/* window tag (90-day / 30-day) */
+.wtag{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-500);background:var(--bg);border:1px solid var(--line-strong);padding:4px 10px;border-radius:999px;margin-bottom:14px;}
+.wtag .d{width:6px;height:6px;border-radius:50%;background:var(--yellow);}
+
+/* ---------- Executive summary ---------- */
+.exec-grid{display:grid;grid-template-columns:1.55fr 1fr;gap:var(--s2);align-items:start;}
+.exec-card{
+  background:var(--bg);border:1px solid var(--line);border-radius:var(--r);
+  padding:30px 32px;box-shadow:var(--sh-sm);
+}
+.exec-card p + p{margin-top:14px;}
+.exec-card .kicker{font-size:13px;font-weight:700;color:var(--green-ink);letter-spacing:.02em;margin-bottom:6px;text-transform:uppercase;}
+.exec-figs{display:grid;gap:14px;}
+.figcard{
+  background:var(--bg);border:1px solid var(--line);border-radius:var(--r);
+  padding:18px 22px;box-shadow:var(--sh-sm);position:relative;
+}
+.figcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:var(--r) 0 0 var(--r);}
+.figcard.green::before{background:var(--green);}
+.figcard.navy::before{background:var(--navy);}
+.figcard.gold::before{background:var(--yellow);}
+.figcard .ft{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-500);}
+.figcard .fv{font-size:31px;font-weight:800;color:var(--ink);line-height:1.1;margin-top:4px;letter-spacing:-.02em;}
+.figcard .fv small{font-size:15px;font-weight:600;color:var(--ink-500);letter-spacing:0;}
+.figcard .fn{font-size:13px;color:var(--ink-500);margin-top:4px;}
+
+/* ---------- Timeline / milestone strip ---------- */
+.tl-note{font-size:14.5px;color:var(--ink-700);max-width:74ch;margin-top:var(--s3);background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--yellow);border-radius:var(--r);padding:18px 22px;box-shadow:var(--sh-sm);}
+.tl-note b{color:var(--ink);}
+.timeline{
+  background:var(--bg);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--sh-sm);padding:34px 30px 30px;
+}
+.tl-track{display:grid;grid-template-columns:repeat(5,1fr);position:relative;}
+.tl-track::before{content:"";position:absolute;left:6%;right:6%;top:43px;height:2px;background:var(--line-strong);z-index:0;}
+.tl-node{position:relative;text-align:center;padding:0 8px;z-index:1;}
+.tl-date{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);min-height:18px;}
+.tl-dotrow{height:34px;display:flex;align-items:center;justify-content:center;}
+.tl-dot{width:15px;height:15px;border-radius:50%;background:#fff;border:3px solid var(--navy);}
+.tl-node.start .tl-dot{border-color:var(--ink-400);}
+.tl-node.peak .tl-dot{width:26px;height:26px;background:var(--yellow);border-color:var(--yellow-deep);box-shadow:0 0 0 6px var(--yellow-tint);}
+.tl-node.end .tl-dot{border-color:var(--green);}
+.tl-desc{font-size:13.5px;color:var(--ink-700);margin-top:14px;font-weight:600;line-height:1.45;}
+.tl-node.peak .tl-desc{color:var(--ink);}
+.tl-metric{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;color:var(--ink);background:var(--yellow-tint);border:1px solid var(--yellow-deep);border-radius:999px;padding:3px 10px;}
+.tl-sub{font-size:12px;color:var(--ink-400);margin-top:6px;font-weight:500;}
+
+/* ---------- KPI cards ---------- */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2);}
+.kpi{
+  background:var(--bg);border:1px solid var(--line);border-radius:var(--r);
+  padding:22px 22px 20px;box-shadow:var(--sh-sm);transition:box-shadow .18s, transform .18s;
+}
+.kpi:hover{box-shadow:var(--sh-md);transform:translateY(-2px);}
+.kpi-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px;}
+.kpi-label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-500);}
+.kpi-tag{
+  font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.kpi-tag.green{background:var(--green-tint);color:var(--green-ink);}
+.kpi-tag.navy{background:var(--navy-tint);color:var(--navy);}
+.kpi-tag .delta{font-weight:800;}
+
+.kpi-row{display:grid;grid-template-columns:96px 1fr 70px;align-items:center;gap:10px;padding:7px 0;}
+.kpi-row + .kpi-row{border-top:1px dashed var(--line);}
+.kpi-name{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink-700);}
+.kpi-name .dot{width:8px;height:8px;border-radius:50%;flex:none;}
+.dot-w{background:var(--green);}
+.dot-f{background:var(--navy);}
+.kpi-bar{height:8px;border-radius:999px;background:#eef0f4;overflow:hidden;}
+.kpi-bar > i{display:block;height:100%;border-radius:999px;}
+.bar-w{background:var(--green);}
+.bar-f{background:var(--navy);}
+.kpi-val{font-size:16px;font-weight:800;color:var(--ink);text-align:right;}
+.kpi-val small{font-size:11px;font-weight:600;color:var(--ink-500);}
+
+/* ---------- Winner summary ---------- */
+.winner-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2);}
+.winner{
+  background:var(--bg);border:1px solid var(--line);border-radius:var(--r);
+  padding:28px 26px;box-shadow:var(--sh-sm);border-top:3px solid var(--line);
+}
+.winner.green{border-top-color:var(--green);}
+.winner.navy{border-top-color:var(--navy);}
+.winner.gold{border-top-color:var(--yellow);}
+.winner .wt{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-500);}
+.winner .wn{font-size:27px;font-weight:800;color:var(--ink);margin:8px 0 2px;letter-spacing:-.015em;}
+.winner .wn .small{font-size:14px;font-weight:600;color:var(--ink-500);}
+.winner .wd{font-size:14.5px;color:var(--ink-700);margin-top:10px;}
+.winner .proof{
+  margin-top:18px;padding-top:16px;border-top:1px solid var(--line);
+  display:flex;gap:20px;flex-wrap:wrap;
+}
+.winner .proof div{font-size:13px;color:var(--ink-500);}
+.winner .proof b{display:block;font-size:21px;font-weight:800;color:var(--ink);letter-spacing:-.01em;}
+
+/* ---------- Tables ---------- */
+.table-wrap{
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--bg);
+  box-shadow:var(--sh-sm);
+}
+.table-scroll{overflow-x:auto;}
+table.data{width:100%;border-collapse:collapse;font-size:14.5px;min-width:560px;}
+table.data thead th{
+  background:var(--bg-soft);text-align:right;font-size:11.5px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--ink-500);
+  padding:14px 18px;border-bottom:1px solid var(--line-strong);white-space:nowrap;
+}
+table.data thead th:first-child{text-align:left;}
+table.data tbody td{
+  padding:13px 18px;text-align:right;border-bottom:1px solid var(--line);
+  color:var(--ink-700);font-weight:600;white-space:nowrap;
+}
+table.data tbody td:first-child{text-align:left;font-weight:600;color:var(--ink);}
+table.data tbody tr:last-child td{border-bottom:0;}
+table.data tbody tr:hover td{background:#fcfcfd;}
+table.data tfoot td{
+  padding:13px 18px;text-align:right;font-weight:800;color:var(--ink);
+  background:var(--bg-soft);border-top:2px solid var(--line-strong);white-space:nowrap;
+}
+table.data tfoot td:first-child{text-align:left;}
+.col-w{color:var(--green-ink) !important;}
+.col-f{color:var(--navy) !important;}
+.cellhead{display:inline-flex;align-items:center;gap:7px;}
+.cellhead .swatch{width:9px;height:9px;}
+
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;}
+.chip.green{background:var(--green-tint);color:var(--green-ink);}
+.chip.navy{background:var(--navy-tint);color:var(--navy);}
+.chip.flat{background:var(--bg-soft);color:var(--ink-500);}
+
+/* highlighted rows in traffic tables */
+tr.row-flag td{background:var(--yellow-tint) !important;}
+tr.row-flag td:first-child{box-shadow:inset 3px 0 0 var(--yellow);}
+tr.row-good td{background:var(--green-tint) !important;}
+tr.row-good td:first-child{box-shadow:inset 3px 0 0 var(--green);}
+.rowtag{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-left:8px;padding:2px 7px;border-radius:3px;vertical-align:middle;}
+.rowtag.warn{background:#fff;color:#8a6d00;border:1px solid #e9d27a;}
+.rowtag.good{background:#fff;color:var(--green-ink);border:1px solid #b6e3c1;}
+
+/* ---------- Charts ---------- */
+.chart-card{
+  background:var(--bg);border:1px solid var(--line);border-radius:var(--r);
+  padding:26px 26px 22px;box-shadow:var(--sh-sm);
+}
+.chart-card h3{font-size:17px;font-weight:700;letter-spacing:-.01em;}
+.chart-card .csub{font-size:13.5px;color:var(--ink-500);margin-top:4px;margin-bottom:16px;}
+.chart-box{position:relative;width:100%;height:360px;}
+.chart-box.tall{height:420px;}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2);align-items:start;}
+.two-col.wide-left{grid-template-columns:1.35fr 1fr;}
+.stack-tables{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2);}
+.subtable-title{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-500);margin:0 0 12px;display:flex;align-items:center;gap:9px;}
+
+/* ---------- Callout ---------- */
+.callout{
+  background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--yellow);
+  border-radius:var(--r);padding:24px 28px;box-shadow:var(--sh-sm);
+  display:flex;gap:26px;align-items:center;flex-wrap:wrap;
+}
+.callout .big{font-size:35px;font-weight:800;color:var(--ink);letter-spacing:-.02em;white-space:nowrap;}
+.callout .big .vs{color:var(--ink-400);font-weight:600;font-size:18px;margin:0 8px;}
+.callout .ctxt{flex:1;min-width:260px;}
+.callout .ctxt b{color:var(--ink);}
+
+/* ---------- Insight cards ---------- */
+.insight-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2);}
+.insight{
+  background:var(--bg);border:1px solid var(--line);border-radius:var(--r);
+  padding:26px 26px;box-shadow:var(--sh-sm);display:flex;flex-direction:column;
+}
+.insight .ico{
+  width:40px;height:40px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;
+  margin-bottom:16px;border:1px solid var(--line);
+}
+.insight.green .ico{background:var(--green-tint);border-color:#bfe7c8;}
+.insight.navy .ico{background:var(--navy-tint);border-color:#cdd9ea;}
+.insight.gold .ico{background:var(--yellow-tint);border-color:#ecdf95;}
+.insight .ico svg{width:21px;height:21px;}
+.insight h3{font-size:17px;font-weight:700;letter-spacing:-.01em;}
+.insight p{font-size:14.5px;color:var(--ink-700);margin-top:10px;}
+.insight .metric{margin-top:auto;padding-top:16px;font-size:13px;color:var(--ink-500);}
+.insight .metric b{color:var(--ink);font-weight:700;}
+
+/* ---------- Recommendations ---------- */
+.rec-list{display:grid;gap:14px;counter-reset:rec;}
+.rec{
+  display:grid;grid-template-columns:44px 1fr;gap:18px;align-items:start;
+  background:var(--bg);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 24px;box-shadow:var(--sh-sm);
+}
+.rec .n{
+  width:44px;height:44px;border-radius:var(--r-sm);background:var(--ink);color:var(--yellow);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;
+}
+.rec .rt{font-size:16px;font-weight:700;color:var(--ink);}
+.rec .rd{font-size:14.5px;color:var(--ink-700);margin-top:3px;}
+
+/* ---------- Conclusion ---------- */
+.conclusion{
+  background:var(--ink);color:#e7eaf0;border-radius:var(--r);padding:44px 46px;
+  box-shadow:var(--sh-lg);position:relative;overflow:hidden;
+}
+.conclusion::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--yellow);}
+.conclusion::after{content:"";position:absolute;right:-60px;top:-60px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(255,219,0,.10) 0%,rgba(255,219,0,0) 70%);}
+.conclusion .ce{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.conclusion .ce::before{content:"";width:26px;height:2px;background:var(--yellow);}
+.conclusion h2{color:#fff;font-size:clamp(23px,3.1vw,31px);letter-spacing:-.02em;max-width:24ch;}
+.conclusion p{color:#c4cbd6;font-size:16px;margin-top:16px;max-width:80ch;}
+.conclusion .signoff{margin-top:26px;padding-top:20px;border-top:1px solid rgba(255,255,255,.13);font-size:13px;color:#9aa3b2;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.conclusion .signoff .ftag{background:var(--yellow);color:var(--ink);font-weight:800;font-size:11px;letter-spacing:.04em;padding:4px 10px;border-radius:3px;}
+
+/* ---------- Methodology ---------- */
+.method{
+  background:var(--bg);border:1px solid var(--line);border-radius:var(--r);
+  padding:30px 32px;box-shadow:var(--sh-sm);
+}
+.method dl{display:grid;grid-template-columns:220px 1fr;gap:0;margin:0;}
+.method dt{
+  font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-500);
+  padding:14px 0;border-bottom:1px solid var(--line);
+}
+.method dd{
+  margin:0;padding:14px 0;border-bottom:1px solid var(--line);color:var(--ink-700);font-size:14.5px;
+}
+.method dl > div{display:contents;}
+.method dl > div:last-child dt,.method dl > div:last-child dd{border-bottom:0;}
+.method .note{font-size:13px;color:var(--ink-500);margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);}
+
+/* ---------- Footer ---------- */
+.site-footer{padding:50px 0 56px;background:var(--ink);color:#c9cfd9;border-top:4px solid var(--yellow);}
+.site-footer .inner{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:40px;}
+.foot-brand .foot-logo{height:30px;width:auto;margin-bottom:18px;}
+.foot-brand p{font-size:13px;color:#9aa3b2;max-width:40ch;line-height:1.6;}
+.foot-col h4{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#7e8696;margin:0 0 14px;}
+.foot-col ul{list-style:none;margin:0;padding:0;display:grid;gap:8px;}
+.foot-col li{font-size:13px;color:#c2c8d2;line-height:1.4;}
+.foot-col .fk{color:#7e8696;font-weight:600;}
+.foot-col a{color:#c2c8d2;text-decoration:none;}
+.foot-col a:hover{color:#fff;}
+.foot-bottom{margin-top:38px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;}
+.foot-bottom p{font-size:12px;color:#7e8696;}
+.foot-tag{background:var(--yellow);color:var(--ink);font-weight:800;font-size:11px;letter-spacing:.04em;padding:5px 11px;border-radius:3px;}
+
+/* ---------- Campaign spike ---------- */
+.campaign-id{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86em;background:var(--bg-soft);border:1px solid var(--line);border-radius:3px;padding:1px 6px;color:var(--ink);}
+.conclusion .campaign-id{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.2);color:#fff;}
+.cmp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:var(--s2);}
+.cmp-fig{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh-sm);position:relative;}
+.cmp-fig::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:var(--r) 0 0 var(--r);background:var(--yellow);}
+.cmp-fig .ft{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-500);}
+.cmp-fig .fv{font-size:27px;font-weight:800;color:var(--ink);line-height:1.1;margin-top:5px;letter-spacing:-.02em;}
+.cmp-fig .fv small{font-size:14px;font-weight:600;color:var(--ink-500);letter-spacing:0;}
+.cmp-fig .fn{font-size:12.5px;color:var(--ink-500);margin-top:4px;}
+.cmp-meta{background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--yellow);border-radius:var(--r);padding:16px 20px;box-shadow:var(--sh-sm);margin-bottom:var(--s2);display:grid;grid-template-columns:repeat(3,auto);gap:6px 30px;}
+.cmp-meta div{font-size:13.5px;color:var(--ink-700);}
+.cmp-meta .ck{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-400);display:block;margin-bottom:2px;}
+
+/* ---------- Period filter ---------- */
+#periodFilter .pill{cursor:pointer;font-family:inherit;line-height:1.2;transition:background .15s,border-color .15s,color .15s,box-shadow .15s;}
+#periodFilter .pill:hover{border-color:var(--ink-400);}
+#periodFilter .pill.primary:hover{border-color:var(--ink);}
+#periodFilter .pill:focus-visible{outline:2px solid var(--green);outline-offset:2px;}
+.filter-hint{margin-top:10px;font-size:12.5px;color:var(--ink-500);max-width:62ch;}
+.filter-hint::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--yellow);margin-right:8px;vertical-align:middle;}
+
+/* ---------- Business drivers ---------- */
+.drivers{display:grid;gap:var(--s2);}
+.driver{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-sm);padding:26px 28px;}
+.driver-head{display:flex;gap:15px;align-items:center;margin-bottom:18px;}
+.driver-letter{flex:none;width:34px;height:34px;border-radius:var(--r-sm);background:var(--ink);color:var(--yellow);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;}
+.driver-head h3{font-size:18px;font-weight:700;letter-spacing:-.01em;}
+.driver-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.driver-col{border:1px solid var(--line);border-radius:var(--r-sm);padding:16px 18px;background:var(--bg-soft);}
+.driver-col.w{border-top:3px solid var(--green);}
+.driver-col.f{border-top:3px solid var(--navy);}
+.dc-title{font-size:12.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-700);margin-bottom:11px;display:flex;align-items:center;gap:8px;}
+.driver-col ul{list-style:none;margin:0;padding:0;display:grid;gap:8px;}
+.driver-col li{font-size:14px;color:var(--ink-700);padding-left:16px;position:relative;line-height:1.5;}
+.driver-col li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--line-strong);}
+.driver-col.w li::before{background:var(--green);}
+.driver-col.f li::before{background:var(--navy);}
+.driver-single{font-size:14.5px;color:var(--ink-700);margin-bottom:16px;line-height:1.6;}
+.driver-key{font-size:14.5px;color:var(--ink);background:var(--yellow-tint);border:1px solid #ecdf95;border-left:4px solid var(--yellow);border-radius:var(--r-sm);padding:13px 16px;line-height:1.55;}
+.driver-key b{font-weight:700;}
+.driver-key .kl{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9a7d00;display:block;margin-bottom:3px;}
+
+/* ---------- Why summary card ---------- */
+.why-card{background:var(--bg);border:1px solid var(--line-strong);border-radius:var(--r);box-shadow:var(--sh-md);overflow:hidden;}
+.why-top{background:var(--bg-cream);border-bottom:1px solid var(--line);padding:22px 28px;}
+.why-top .we{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-500);}
+.why-top h3{font-size:clamp(19px,2.4vw,23px);font-weight:800;letter-spacing:-.015em;margin-top:5px;}
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);}
+.why-block{padding:26px 26px;border-left:1px solid var(--line);}
+.why-block:first-child{border-left:0;}
+.why-block .wn{width:30px;height:30px;border-radius:var(--r-sm);background:var(--yellow);color:var(--ink);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;margin-bottom:13px;}
+.why-block h4{font-size:15.5px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:-.01em;}
+.why-block p{font-size:14px;color:var(--ink-700);line-height:1.55;}
+.why-concl{background:var(--ink);color:#eef1f5;padding:22px 28px;font-size:16px;font-weight:500;line-height:1.5;}
+.why-concl b{color:var(--yellow);font-weight:700;}
+
+/* ---------- Responsive ---------- */
+@media (max-width:980px){
+  .exec-grid{grid-template-columns:1fr;}
+  .kpi-grid,.winner-grid,.insight-grid{grid-template-columns:repeat(2,1fr);}
+  .cmp-grid{grid-template-columns:repeat(2,1fr);}
+  .cmp-meta{grid-template-columns:1fr 1fr;}
+  .verdict{grid-template-columns:1fr;}
+  .verdict .cell{border-left:0;border-top:1px solid var(--line);}
+  .verdict .cell:first-child{border-top:0;}
+  .two-col,.two-col.wide-left,.stack-tables{grid-template-columns:1fr;}
+  .why-grid{grid-template-columns:1fr;}
+  .why-block{border-left:0;border-top:1px solid var(--line);}
+  .why-block:first-child{border-top:0;}
+  .contents ol{grid-template-columns:repeat(2,1fr);}
+  .method dl{grid-template-columns:1fr;}
+  .method dt{border-bottom:0;padding-bottom:2px;}
+  .method dd{padding-top:2px;}
+  .site-footer .inner{grid-template-columns:1fr 1fr;}
+  .foot-brand{grid-column:1 / -1;}
+}
+@media (max-width:620px){
+  .container{padding:0 18px;}
+  .section{padding:var(--s4) 0;}
+  .kpi-grid,.winner-grid,.insight-grid{grid-template-columns:1fr;}
+  .cmp-grid,.cmp-meta{grid-template-columns:1fr;}
+  .contents ol{grid-template-columns:1fr;}
+  .driver-cols{grid-template-columns:1fr;}
+  .header-meta{display:none;}
+  .section-head{gap:16px;}
+  .sec-index{font-size:26px;}
+  .kpi-row{grid-template-columns:84px 1fr 64px;}
+  .callout .big{font-size:28px;}
+  .rec{grid-template-columns:38px 1fr;gap:14px;}
+  .rec .n{width:38px;height:38px;}
+  /* timeline becomes vertical */
+  .tl-track{grid-template-columns:1fr;gap:0;}
+  .tl-track::before{left:25px;right:auto;top:8px;bottom:8px;width:2px;height:auto;}
+  .tl-node{display:grid;grid-template-columns:52px 1fr;text-align:left;gap:0 14px;padding:14px 0;align-items:start;}
+  .tl-date{grid-row:1;grid-column:2;min-height:0;margin-bottom:4px;}
+  .tl-dotrow{grid-row:1 / span 3;grid-column:1;height:auto;justify-content:flex-start;padding-top:0;}
+  .tl-desc{grid-column:2;margin-top:2px;}
+  .tl-metric{grid-column:2;}
+  .tl-sub{grid-column:2;}
+  .site-footer .inner{grid-template-columns:1fr;gap:28px;}
+  .foot-brand{grid-column:auto;}
+}
+
+/* ---------- A11y ---------- */
+a:focus-visible,button:focus-visible{outline:3px solid var(--green);outline-offset:2px;border-radius:2px;}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;scroll-behavior:auto !important;}}
+
+/* ---------- Print ---------- */
+@media print{
+  body{font-size:12px;}
+  .site-header{position:static;}
+  .contents{display:none;}
+  .section{padding:22px 0;page-break-inside:avoid;border-color:#ddd;}
+  .chart-card,.kpi,.winner,.insight,.exec-card,.method,.rec,.table-wrap,.timeline{box-shadow:none;}
+  .conclusion{background:#fff;color:#222;border:1px solid #ccc;}
+  .conclusion h2,.conclusion .ce{color:#222;}
+  .conclusion p{color:#333;}
+  .site-footer{background:#fff;color:#333;border-top:2px solid var(--yellow);}
+  .kpi:hover{transform:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar"></div>
+
+<!-- ============ HEADER ============ -->
+<header class="site-header">
+  <div class="container inner">
+    <!-- Replace src with assets/meloyelo-logo.png if you prefer an external file -->
+    <img class="brand-logo" src="data:image/png;base64,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" alt="MeloYelo - just mad about e-bikes" />
+    <div class="header-meta">
+      <div class="hm-item">
+        <span class="k">Source</span>
+        <span class="v">Google Analytics 4</span>
+      </div>
+      <span class="hm-sep"></span>
+      <div class="hm-item">
+        <span class="k">Period</span>
+        <span class="v" id="hdrPeriod">90 days to 18 Jun 2026</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="container">
+    <div class="eyebrow">MeloYelo · Dealer page analytics</div>
+    <h1>Dealer Page Performance Comparison</h1>
+    <p class="subtitle">Whangarei <b>new design</b> measured against Franklin <b>old design</b>, using Google Analytics 4. A read on which page drives more customer actions, and the part traffic quality played in the result.</p>
+
+    <div class="hero-meta" id="periodFilter" role="group" aria-label="Select reporting period to filter the headline metrics">
+      <button type="button" class="pill primary" data-period="90d" aria-pressed="true"><span class="pk">Reporting period</span> 21 Mar to 18 Jun 2026 · 90 days</button>
+      <button type="button" class="pill" data-period="30d" aria-pressed="false"><span class="pk">Recent view</span> 20 May to 18 Jun 2026 · 30 days</button>
+    </div>
+    <p class="filter-hint">Select a period to filter the headline metrics in sections 03 and 05. The detailed breakdowns further down keep their own fixed windows.</p>
+
+    <div class="hero-meta">
+      <span class="legend">
+        <span><i class="swatch sw-w"></i> Whangarei, new design</span>
+        <span><i class="swatch sw-f"></i> Franklin, old design</span>
+      </span>
+    </div>
+
+    <div class="verdict" role="group" aria-label="Headline verdict">
+      <div class="cell green">
+        <div class="lbl">Business actions</div>
+        <div class="win">Whangarei</div>
+        <div class="sub">38 key events to Franklin's 1 over 90 days</div>
+      </div>
+      <div class="cell navy">
+        <div class="lbl">Engagement quality</div>
+        <div class="win">Franklin</div>
+        <div class="sub">Higher engagement rate and longer time on page</div>
+      </div>
+      <div class="cell gold">
+        <div class="lbl">Overall recommendation</div>
+        <div class="win">Whangarei</div>
+        <div class="sub">Stronger outcomes, with a traffic-mix caveat</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTENTS ============ -->
+<nav class="contents" aria-label="Report contents">
+  <div class="container inner">
+    <div class="ct-title">Report contents</div>
+    <ol>
+      <li><a href="#exec">Executive summary</a></li>
+      <li><a href="#timeline">Reporting timeline</a></li>
+      <li><a href="#campaign">Campaign spike analysis</a></li>
+      <li><a href="#kpi">Performance indicators</a></li>
+      <li><a href="#verdict">Two strengths, one call</a></li>
+      <li><a href="#table">Core metrics</a></li>
+      <li><a href="#events">Key event breakdown</a></li>
+      <li><a href="#sources">Traffic source analysis</a></li>
+      <li><a href="#search">Search only, Meta excluded</a></li>
+      <li><a href="#recent">Recent 30 days</a></li>
+      <li><a href="#recent-detail">Recent actions and sources</a></li>
+      <li><a href="#drivers">Business drivers</a></li>
+      <li><a href="#why">Why Whangarei outperforms</a></li>
+      <li><a href="#insights">What the data shows</a></li>
+      <li><a href="#recommendations">Recommendations</a></li>
+      <li><a href="#conclusion">Conclusion</a></li>
+      <li><a href="#methodology">Methodology</a></li>
+    </ol>
+  </div>
+</nav>
+
+<!-- ============ 01 EXECUTIVE SUMMARY ============ -->
+<section class="section" id="exec">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">01</div>
+      <div class="hgroup">
+        <div class="eyebrow">Executive summary</div>
+        <h2>Whangarei is driving more customer actions. Franklin engages a smaller audience more deeply.</h2>
+      </div>
+    </div>
+    <div class="exec-grid">
+      <div class="exec-card">
+        <p>Whangarei, the newer dealer page, is the stronger performer for business actions across the full 90 day period. It drew more active users, more views, more events, and far more key events than Franklin. Over the same window it recorded 38 key events against Franklin's 1.</p>
+        <p>Franklin tells the opposite story on quality. Its engagement rate and average engagement time are both higher, but its audience is small and it produced almost no key events. The two pages are strong in different ways, so this report keeps those findings separate rather than averaging them into a single score.</p>
+        <p>The result holds once the traffic mix is taken into account. Looking at organic and paid search only, with Meta paid-social removed, Whangarei still produced 20 search-driven key events to Franklin's 1. The main caveat is that Meta paid-social sent a large volume of Whangarei traffic that converted into no key events, so that channel should be reviewed on its own.</p>
+        <p>The June traffic spike was caused primarily by the Meta paid-social campaign <span class="campaign-id">2606-northland-agent-landing-page-test</span>, which began driving traffic on 13 June and peaked on 14 June. This campaign created most of Whangarei's recent traffic volume, but it generated 0 key events, so the spike should be read as campaign-driven awareness traffic rather than proven lead-generation traffic.</p>
+      </div>
+      <div class="exec-figs">
+        <div class="figcard green">
+          <div class="ft">Whangarei key events · 90 days</div>
+          <div class="fv">38</div>
+          <div class="fn">Form submits, phone clicks and email clicks</div>
+        </div>
+        <div class="figcard navy">
+          <div class="ft">Franklin key events · 90 days</div>
+          <div class="fv">1</div>
+          <div class="fn">A single form submission in the period</div>
+        </div>
+        <div class="figcard gold">
+          <div class="ft">Key events per 100 active users · derived</div>
+          <div class="fv">4.2 <small>vs 1.3</small></div>
+          <div class="fn">Whangarei against Franklin, calculated from the figures above</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 REPORTING TIMELINE ============ -->
+<section class="section alt" id="timeline">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">02</div>
+      <div class="hgroup">
+        <div class="eyebrow">Reporting timeline</div>
+        <h2>When Whangarei's growth actually happened</h2>
+        <p class="lead">GA4 shows steady baseline traffic earlier in the year, then a clear step up in mid June. The milestones below come from the GA4 timeline. No daily trend line is shown because daily figures beyond these points were not provided.</p>
+      </div>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-track">
+        <div class="tl-node start">
+          <div class="tl-date">Jan 1</div>
+          <div class="tl-dotrow"><span class="tl-dot"></span></div>
+          <div class="tl-desc">Baseline traffic already present</div>
+          <div class="tl-sub">About 5 to 10 active users and 10 to 20 views per day</div>
+        </div>
+        <div class="tl-node">
+          <div class="tl-date">May to Jun</div>
+          <div class="tl-dotrow"><span class="tl-dot"></span></div>
+          <div class="tl-desc">Stable baseline through late spring</div>
+        </div>
+        <div class="tl-node">
+          <div class="tl-date">Jun 13</div>
+          <div class="tl-dotrow"><span class="tl-dot"></span></div>
+          <div class="tl-desc">Significant traffic increase begins</div>
+        </div>
+        <div class="tl-node peak">
+          <div class="tl-date">Jun 14</div>
+          <div class="tl-dotrow"><span class="tl-dot"></span></div>
+          <div class="tl-desc">Peak day for the page</div>
+          <span class="tl-metric">117 active users · 138 views</span>
+        </div>
+        <div class="tl-node end">
+          <div class="tl-date">Jun 18</div>
+          <div class="tl-dotrow"><span class="tl-dot"></span></div>
+          <div class="tl-desc">Reporting window ends</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="tl-note">The Whangarei dealer page was not brand new in the last 30 days. GA4 shows baseline traffic since <b>1 January 2026</b>, and the major performance surge began on <b>13 June</b>, which points to a marketing push or promotional activity around mid June. For that reason this report carries both a 90 day view and a recent 30 day view, so the underlying trend and the recent spike can both be read clearly.</p>
+  </div>
+</section>
+
+<!-- ============ 03 CAMPAIGN SPIKE ============ -->
+<section class="section" id="campaign">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">03</div>
+      <div class="hgroup">
+        <div class="wtag"><span class="d"></span>Daily view · 10 to 18 June 2026</div>
+        <div class="eyebrow">Campaign spike analysis</div>
+        <h2>What caused the June traffic spike</h2>
+        <p class="lead">Whangarei's traffic jumped sharply in mid June. This section traces that jump to a single source: a Meta paid-social campaign. It drove the volume, but it did not drive the leads.</p>
+      </div>
+    </div>
+
+    <div class="cmp-meta">
+      <div><span class="ck">Source / medium</span>meta / paid-social</div>
+      <div><span class="ck">Campaign</span><span class="campaign-id">2606-northland-agent-landing-page-test</span></div>
+      <div><span class="ck">Primary landing page</span>/dealers/whangarei/</div>
+    </div>
+
+    <div class="cmp-grid">
+      <div class="cmp-fig">
+        <div class="ft">Peak day</div>
+        <div class="fv">14 Jun</div>
+        <div class="fn">Highest traffic day in the window</div>
+      </div>
+      <div class="cmp-fig">
+        <div class="ft">Peak-day active users</div>
+        <div class="fv">117</div>
+        <div class="fn">All sources combined</div>
+      </div>
+      <div class="cmp-fig">
+        <div class="ft">From the Meta campaign</div>
+        <div class="fv">108</div>
+        <div class="fn">Of the 117 users on peak day</div>
+      </div>
+      <div class="cmp-fig">
+        <div class="ft">Peak-day campaign share</div>
+        <div class="fv">~92<small>%</small></div>
+        <div class="fn">Share of traffic from the campaign</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Daily active users against Meta campaign users</h3>
+      <p class="csub">All active users versus users from the Meta paid-social campaign, 10 to 18 June 2026. The campaign starts on 13 June and tracks almost the entire spike from there.</p>
+      <div class="chart-box tall"><canvas id="campaignDailyChart"></canvas></div>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:var(--s2)">
+      <div class="subtable-title" style="padding:18px 18px 0"><i class="swatch" style="background:var(--green)"></i>Daily breakdown · Whangarei</div>
+      <div class="table-scroll">
+        <table class="data">
+          <thead>
+            <tr><th>Date</th><th>All active users</th><th>Meta campaign users</th><th>Campaign share</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10 Jun 2026</td><td>3</td><td>0</td><td>0.0%</td></tr>
+            <tr><td>11 Jun 2026</td><td>6</td><td>0</td><td>0.0%</td></tr>
+            <tr><td>12 Jun 2026</td><td>4</td><td>0</td><td>0.0%</td></tr>
+            <tr class="row-flag"><td>13 Jun 2026 <span class="rowtag warn">Spike begins</span></td><td>50</td><td>28</td><td>56.0%</td></tr>
+            <tr class="row-flag"><td>14 Jun 2026 <span class="rowtag warn">Peak</span></td><td>117</td><td>108</td><td>92.3%</td></tr>
+            <tr><td>15 Jun 2026</td><td>86</td><td>78</td><td>90.7%</td></tr>
+            <tr><td>16 Jun 2026</td><td>84</td><td>72</td><td>85.7%</td></tr>
+            <tr><td>17 Jun 2026</td><td>50</td><td>39</td><td>78.0%</td></tr>
+            <tr><td>18 Jun 2026</td><td>70</td><td>56</td><td>80.0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="big">373 <span class="vs">users</span> 0 <span class="vs">key events</span></div>
+      <div class="ctxt"><b>Campaign drove the spike, but not the leads.</b> Across the last 30 days, Meta paid-social brought 373 active users to Whangarei at a 23.17% engagement rate, and recorded 0 key events. No form submissions, dealer phone clicks or dealer email clicks were tracked from this traffic in the measured period.</div>
+    </div>
+
+    <p>Whangarei was not newly launched in June. GA4 shows the page already had baseline traffic before the spike, so the lift is not a new page going live. The mid-June increase was campaign-driven, primarily from Meta paid-social, layered on top of that existing baseline.</p>
+    <p>The campaign succeeded at generating traffic volume and awareness. It did not generate measurable lead actions during the period. This is also why Whangarei's engagement rate fell in the 30 day view: a large volume of low-engagement Meta traffic entered the page, while the higher-quality actions kept coming from organic, direct and email channels.</p>
+
+    <p class="tl-note"><b>Takeaway.</b> The 13 June traffic spike was caused by the Meta paid-social campaign <span class="campaign-id">2606-northland-agent-landing-page-test</span>. On the peak day, 14 June, the campaign generated 108 of 117 active users, roughly 92% of traffic. Because it produced 0 key events, it should be treated as an awareness and traffic driver, not a proven lead-generation driver.</p>
+  </div>
+</section>
+
+<!-- ============ 03 KPI CARDS ============ -->
+<section class="section alt" id="kpi">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">04</div>
+      <div class="hgroup">
+        <div class="wtag" id="kpiWtag"><span class="d"></span>90 day window · 21 Mar to 18 Jun 2026</div>
+        <div class="eyebrow">Performance indicators</div>
+        <h2>Side by side on the six headline metrics</h2>
+        <p class="lead">Each bar is scaled against the larger value in the pair, so the gap is easy to read at a glance. Whangarei leads on volume and actions. Franklin leads on the two quality measures.</p>
+      </div>
+    </div>
+
+    <div class="kpi-grid" id="kpiGrid" aria-live="polite">
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Active users</span><span class="kpi-tag green">Whangarei <span class="delta">12x</span></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-w"></i>Whangarei</span><span class="kpi-bar"><i class="bar-w" style="width:100%"></i></span><span class="kpi-val">904</span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-f"></i>Franklin</span><span class="kpi-bar"><i class="bar-f" style="width:8.3%"></i></span><span class="kpi-val">75</span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Views</span><span class="kpi-tag green">Whangarei <span class="delta">10x</span></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-w"></i>Whangarei</span><span class="kpi-bar"><i class="bar-w" style="width:100%"></i></span><span class="kpi-val">1,699</span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-f"></i>Franklin</span><span class="kpi-bar"><i class="bar-f" style="width:9.9%"></i></span><span class="kpi-val">169</span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Avg engagement time</span><span class="kpi-tag navy">Franklin <span class="delta">2.2x</span></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-w"></i>Whangarei</span><span class="kpi-bar"><i class="bar-w" style="width:45.7%"></i></span><span class="kpi-val">31.92<small>s</small></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-f"></i>Franklin</span><span class="kpi-bar"><i class="bar-f" style="width:100%"></i></span><span class="kpi-val">69.79<small>s</small></span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Engagement rate</span><span class="kpi-tag navy">Franklin <span class="delta">+31.5 pts</span></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-w"></i>Whangarei</span><span class="kpi-bar"><i class="bar-w" style="width:67%"></i></span><span class="kpi-val">63.86<small>%</small></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-f"></i>Franklin</span><span class="kpi-bar"><i class="bar-f" style="width:100%"></i></span><span class="kpi-val">95.35<small>%</small></span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Event count</span><span class="kpi-tag green">Whangarei <span class="delta">9.6x</span></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-w"></i>Whangarei</span><span class="kpi-bar"><i class="bar-w" style="width:100%"></i></span><span class="kpi-val">5,211</span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-f"></i>Franklin</span><span class="kpi-bar"><i class="bar-f" style="width:10.4%"></i></span><span class="kpi-val">541</span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Key events</span><span class="kpi-tag green">Whangarei <span class="delta">38 vs 1</span></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-w"></i>Whangarei</span><span class="kpi-bar"><i class="bar-w" style="width:100%"></i></span><span class="kpi-val">38</span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-f"></i>Franklin</span><span class="kpi-bar"><i class="bar-f" style="width:2.6%"></i></span><span class="kpi-val">1</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 04 WINNER SUMMARY ============ -->
+<section class="section" id="verdict">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">05</div>
+      <div class="hgroup">
+        <div class="eyebrow">Two strengths, one recommendation</div>
+        <h2>The two pages win on different things</h2>
+        <p class="lead">Calling a single overall winner would hide half the story. Here is who leads on each dimension, and the recommendation that follows once volume and quality are weighed together.</p>
+      </div>
+    </div>
+    <div class="winner-grid">
+      <div class="winner green">
+        <div class="wt">Business-action winner</div>
+        <div class="wn">Whangarei</div>
+        <div class="wd">The newer page produced a broader range of customer actions and far more of them, including form submissions, phone clicks and email clicks.</div>
+        <div class="proof">
+          <div><b>38</b>key events</div>
+          <div><b>904</b>active users</div>
+          <div><b>1,699</b>views</div>
+        </div>
+      </div>
+      <div class="winner navy">
+        <div class="wt">Engagement-quality winner</div>
+        <div class="wn">Franklin</div>
+        <div class="wd">A smaller audience stayed longer and engaged at a higher rate. That engagement rarely turned into a tracked action over the period.</div>
+        <div class="proof">
+          <div><b>95.35%</b>engagement rate</div>
+          <div><b>69.79s</b>avg time</div>
+          <div><b>1</b>key event</div>
+        </div>
+      </div>
+      <div class="winner gold">
+        <div class="wt">Overall business performance</div>
+        <div class="wn">Whangarei <span class="small">with caveat</span></div>
+        <div class="wd">Stronger on the actions that matter for a dealer page, and still ahead after Meta paid-social is set aside. Review the traffic mix before crediting design alone.</div>
+        <div class="proof">
+          <div><b>20</b>search key events</div>
+          <div><b>8h 00m</b>total engagement</div>
+          <div><b>Review</b>Meta paid-social</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 CORE METRICS TABLE ============ -->
+<section class="section alt" id="table">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">06</div>
+      <div class="hgroup">
+        <div class="wtag" id="tableWtag"><span class="d"></span>90 day window · 21 Mar to 18 Jun 2026</div>
+        <div class="eyebrow">Core metrics</div>
+        <h2>Every figure, exactly as reported</h2>
+        <p class="lead">The full set of headline metrics with no rounding. Figures are shown as GA4 reported them.</p>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table class="data">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th><span class="cellhead"><i class="swatch sw-w"></i>Whangarei · new</span></th>
+              <th><span class="cellhead"><i class="swatch sw-f"></i>Franklin · old</span></th>
+              <th>Leader</th>
+            </tr>
+          </thead>
+          <tbody id="coreMetricsBody" aria-live="polite">
+            <tr><td>Active users</td><td class="col-w">904</td><td class="col-f">75</td><td><span class="chip green">Whangarei</span></td></tr>
+            <tr><td>Views</td><td class="col-w">1,699</td><td class="col-f">169</td><td><span class="chip green">Whangarei</span></td></tr>
+            <tr><td>Average engagement time</td><td class="col-w">31.92s</td><td class="col-f">69.79s</td><td><span class="chip navy">Franklin</span></td></tr>
+            <tr><td>Engagement rate</td><td class="col-w">63.86%</td><td class="col-f">95.35%</td><td><span class="chip navy">Franklin</span></td></tr>
+            <tr><td>Event count</td><td class="col-w">5,211</td><td class="col-f">541</td><td><span class="chip green">Whangarei</span></td></tr>
+            <tr><td>Key events</td><td class="col-w">38</td><td class="col-f">1</td><td><span class="chip green">Whangarei</span></td></tr>
+            <tr><td>Total user engagement</td><td class="col-w">8h 00m</td><td class="col-f">1h 27m</td><td><span class="chip green">Whangarei</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 KEY EVENT BREAKDOWN ============ -->
+<section class="section" id="events">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">07</div>
+      <div class="hgroup">
+        <div class="wtag"><span class="d"></span>90 day window · 21 Mar to 18 Jun 2026</div>
+        <div class="eyebrow">Key event breakdown</div>
+        <h2>Where the conversions came from</h2>
+        <p class="lead">Whangarei generated a spread of customer actions across forms, phone clicks and email clicks. Franklin recorded a single form submission in the same period.</p>
+      </div>
+    </div>
+    <div class="two-col wide-left">
+      <div class="chart-card">
+        <h3>Key events by type</h3>
+        <p class="csub">Count of each tracked action over 90 days. Values are shown on every bar.</p>
+        <div class="chart-box"><canvas id="keyEventsChart"></canvas></div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table class="data" style="min-width:0">
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th><span class="cellhead"><i class="swatch sw-w"></i>Whangarei</span></th>
+                <th><span class="cellhead"><i class="swatch sw-f"></i>Franklin</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Form submit</td><td class="col-w">27</td><td class="col-f">1</td></tr>
+              <tr><td>Dealer phone</td><td class="col-w">7</td><td class="col-f">0</td></tr>
+              <tr><td>Dealer email</td><td class="col-w">4</td><td class="col-f">0</td></tr>
+            </tbody>
+            <tfoot>
+              <tr><td>Total key events</td><td>38</td><td>1</td></tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 07 TRAFFIC SOURCE ANALYSIS ============ -->
+<section class="section alt" id="sources">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">08</div>
+      <div class="hgroup">
+        <div class="wtag"><span class="d"></span>90 day window · 21 Mar to 18 Jun 2026</div>
+        <div class="eyebrow">Traffic source analysis</div>
+        <h2>Volume did not equal conversions</h2>
+        <p class="lead">Whangarei's biggest channel by users, Meta paid-social, produced no key events. Smaller local and organic search traffic did the converting. The two cards below frame the contrast, and the chart shows it across every source.</p>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-bottom:var(--s2)">
+      <div class="figcard gold">
+        <div class="ft">meta / paid-social · review</div>
+        <div class="fv">0 <small>key events</small></div>
+        <div class="fn">373 active users and a 23.2% engagement rate, but no tracked actions. High volume, low conversion quality.</div>
+      </div>
+      <div class="figcard green">
+        <div class="ft">whangarei / organic · top converter</div>
+        <div class="fv">15 <small>key events</small></div>
+        <div class="fn">148 active users at a 95.2% engagement rate. The strongest converting source on the page.</div>
+      </div>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:var(--s2)">
+      <h3>Whangarei traffic by source</h3>
+      <p class="csub">Bars show active users on the left axis. The line shows key events on the right axis. The tallest bar, Meta paid-social, sits at zero key events.</p>
+      <div class="chart-box tall"><canvas id="whangareiSourceChart"></canvas></div>
+    </div>
+
+    <div class="stack-tables">
+      <div>
+        <div class="subtable-title"><i class="swatch sw-w"></i>Whangarei sources</div>
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table class="data">
+              <thead>
+                <tr><th>Source / medium</th><th>Users</th><th>Views</th><th>Eng. rate</th><th>Events</th><th>Key</th></tr>
+              </thead>
+              <tbody>
+                <tr class="row-flag"><td>meta / paid-social <span class="rowtag warn">Review</span></td><td>373</td><td>443</td><td>23.2%</td><td>1,300</td><td>0</td></tr>
+                <tr class="row-good"><td>whangarei / organic <span class="rowtag good">Top converter</span></td><td>148</td><td>320</td><td>95.2%</td><td>1,100</td><td>15</td></tr>
+                <tr><td>google / organic</td><td>88</td><td>211</td><td>89.4%</td><td>660</td><td>3</td></tr>
+                <tr><td>google / cpc</td><td>44</td><td>108</td><td>95.9%</td><td>350</td><td>2</td></tr>
+                <tr><td>(direct) / (none)</td><td>23</td><td>56</td><td>78.8%</td><td>187</td><td>3</td></tr>
+                <tr><td>fb / paid</td><td>22</td><td>30</td><td>36.0%</td><td>92</td><td>0</td></tr>
+                <tr><td>facebook.com / referral</td><td>8</td><td>8</td><td>37.5%</td><td>27</td><td>0</td></tr>
+                <tr><td>(not set)</td><td>6</td><td>12</td><td>100.0%</td><td>37</td><td>0</td></tr>
+                <tr><td>m.facebook.com / referral</td><td>6</td><td>6</td><td>0.0%</td><td>18</td><td>0</td></tr>
+                <tr><td>bing / organic</td><td>4</td><td>11</td><td>100.0%</td><td>36</td><td>0</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="subtable-title"><i class="swatch sw-f"></i>Franklin sources</div>
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table class="data">
+              <thead>
+                <tr><th>Source / medium</th><th>Users</th><th>Views</th><th>Eng. rate</th><th>Events</th><th>Key</th></tr>
+              </thead>
+              <tbody>
+                <tr class="row-good"><td>franklin / organic <span class="rowtag good">Only converter</span></td><td>12</td><td>29</td><td>100.0%</td><td>112</td><td>1</td></tr>
+                <tr><td>google / organic</td><td>10</td><td>21</td><td>100.0%</td><td>72</td><td>0</td></tr>
+                <tr><td>google / cpc</td><td>9</td><td>28</td><td>100.0%</td><td>91</td><td>0</td></tr>
+                <tr><td>(direct) / (none)</td><td>8</td><td>14</td><td>88.9%</td><td>35</td><td>0</td></tr>
+                <tr><td>campaign monitor / email</td><td>2</td><td>4</td><td>100.0%</td><td>9</td><td>0</td></tr>
+                <tr><td>bing / organic</td><td>1</td><td>2</td><td>100.0%</td><td>5</td><td>0</td></tr>
+                <tr><td>createsend.com / referral</td><td>1</td><td>2</td><td>100.0%</td><td>6</td><td>0</td></tr>
+                <tr><td>evolocity.createsend.com / referral</td><td>1</td><td>0</td><td>100.0%</td><td>2</td><td>0</td></tr>
+                <tr><td>keep.google.com / referral</td><td>1</td><td>1</td><td>100.0%</td><td>2</td><td>0</td></tr>
+                <tr><td>nz.search.yahoo.com / referral</td><td>1</td><td>2</td><td>100.0%</td><td>6</td><td>0</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 08 ORGANIC & PAID SEARCH ============ -->
+<section class="section" id="search">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">09</div>
+      <div class="hgroup">
+        <div class="wtag"><span class="d"></span>90 day window · search channels only</div>
+        <div class="eyebrow">Search only, Meta excluded</div>
+        <h2>The result holds without Meta</h2>
+        <p class="lead">This view removes Meta paid-social and other social and referral traffic, leaving organic and paid search. Whangarei still leads clearly on key events, so the finding is not down to one noisy channel.</p>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-bottom:var(--s2)">
+      <div class="big">20 <span class="vs">vs</span> 1</div>
+      <div class="ctxt">Search-driven key events, <b>Whangarei against Franklin</b>, once Meta paid-social and other social and referral traffic are set aside. The newer page is producing more business-value interactions, not just more low-quality paid-social volume.</div>
+    </div>
+
+    <div class="two-col wide-left">
+      <div class="chart-card">
+        <h3>Key events from search</h3>
+        <p class="csub">Organic and paid search key events over 90 days. Values are shown on every bar.</p>
+        <div class="chart-box"><canvas id="orgPaidChart"></canvas></div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table class="data">
+            <thead>
+              <tr><th>Segment</th><th>Users</th><th>Views</th><th>Eng. rate</th><th>Events</th><th>Key</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="chip green">W</span> Organic</td><td>240</td><td>542</td><td>93.13%</td><td>1,755</td><td>18</td></tr>
+              <tr><td><span class="chip green">W</span> Paid search</td><td>44</td><td>108</td><td>95.92%</td><td>350</td><td>2</td></tr>
+              <tr><td><span class="chip navy">F</span> Organic</td><td>24</td><td>54</td><td>100%</td><td>195</td><td>1</td></tr>
+              <tr><td><span class="chip navy">F</span> Paid search</td><td>9</td><td>28</td><td>100%</td><td>91</td><td>0</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 09 RECENT 30 DAYS ============ -->
+<section class="section alt" id="recent">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">10</div>
+      <div class="hgroup">
+        <div class="wtag"><span class="d"></span>30 day window · 20 May to 18 Jun 2026</div>
+        <div class="eyebrow">Recent 30 days</div>
+        <h2>The recent window tells the same story, more sharply</h2>
+        <p class="lead">In the last 30 days Whangarei had close to 26 times more active users than Franklin and generated 16 key events, while Franklin generated none. Franklin still engaged its visitors more deeply, but the audience was too small to produce measurable customer actions.</p>
+      </div>
+    </div>
+
+    <div class="kpi-grid" style="margin-bottom:var(--s2)">
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Active users</span><span class="kpi-tag green">Whangarei <span class="delta">26x</span></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-w"></i>Whangarei</span><span class="kpi-bar"><i class="bar-w" style="width:100%"></i></span><span class="kpi-val">567</span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-f"></i>Franklin</span><span class="kpi-bar"><i class="bar-f" style="width:3.9%"></i></span><span class="kpi-val">22</span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Views</span><span class="kpi-tag green">Whangarei <span class="delta">17x</span></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-w"></i>Whangarei</span><span class="kpi-bar"><i class="bar-w" style="width:100%"></i></span><span class="kpi-val">817</span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-f"></i>Franklin</span><span class="kpi-bar"><i class="bar-f" style="width:6%"></i></span><span class="kpi-val">49</span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Avg engagement time</span><span class="kpi-tag navy">Franklin <span class="delta">2.8x</span></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-w"></i>Whangarei</span><span class="kpi-bar"><i class="bar-w" style="width:35.3%"></i></span><span class="kpi-val">19.72<small>s</small></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-f"></i>Franklin</span><span class="kpi-bar"><i class="bar-f" style="width:100%"></i></span><span class="kpi-val">55.82<small>s</small></span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Engagement rate</span><span class="kpi-tag navy">Franklin <span class="delta">+53 pts</span></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-w"></i>Whangarei</span><span class="kpi-bar"><i class="bar-w" style="width:44.9%"></i></span><span class="kpi-val">43.20<small>%</small></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-f"></i>Franklin</span><span class="kpi-bar"><i class="bar-f" style="width:100%"></i></span><span class="kpi-val">96.15<small>%</small></span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Event count</span><span class="kpi-tag green">Whangarei <span class="delta">16x</span></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-w"></i>Whangarei</span><span class="kpi-bar"><i class="bar-w" style="width:100%"></i></span><span class="kpi-val">2,571</span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-f"></i>Franklin</span><span class="kpi-bar"><i class="bar-f" style="width:6.4%"></i></span><span class="kpi-val">164</span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top"><span class="kpi-label">Key events</span><span class="kpi-tag green">Whangarei <span class="delta">16 vs 0</span></span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-w"></i>Whangarei</span><span class="kpi-bar"><i class="bar-w" style="width:100%"></i></span><span class="kpi-val">16</span></div>
+        <div class="kpi-row"><span class="kpi-name"><i class="dot dot-f"></i>Franklin</span><span class="kpi-bar"><i class="bar-f" style="width:0%"></i></span><span class="kpi-val">0</span></div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table class="data">
+          <thead>
+            <tr>
+              <th>Metric · last 30 days</th>
+              <th><span class="cellhead"><i class="swatch sw-w"></i>Whangarei · new</span></th>
+              <th><span class="cellhead"><i class="swatch sw-f"></i>Franklin · old</span></th>
+              <th>Leader</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Active users</td><td class="col-w">567</td><td class="col-f">22</td><td><span class="chip green">Whangarei</span></td></tr>
+            <tr><td>Views</td><td class="col-w">817</td><td class="col-f">49</td><td><span class="chip green">Whangarei</span></td></tr>
+            <tr><td>Average engagement time</td><td class="col-w">19.72s</td><td class="col-f">55.82s</td><td><span class="chip navy">Franklin</span></td></tr>
+            <tr><td>Engagement rate</td><td class="col-w">43.20%</td><td class="col-f">96.15%</td><td><span class="chip navy">Franklin</span></td></tr>
+            <tr><td>Event count</td><td class="col-w">2,571</td><td class="col-f">164</td><td><span class="chip green">Whangarei</span></td></tr>
+            <tr><td>Key events</td><td class="col-w">16</td><td class="col-f">0</td><td><span class="chip green">Whangarei</span></td></tr>
+            <tr><td>Total user engagement</td><td class="col-w">3h 06m</td><td class="col-f">20m 28s</td><td><span class="chip green">Whangarei</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 RECENT ACTIONS AND SOURCES ============ -->
+<section class="section" id="recent-detail">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">11</div>
+      <div class="hgroup">
+        <div class="wtag"><span class="d"></span>30 day window · 20 May to 18 Jun 2026</div>
+        <div class="eyebrow">Recent actions and sources</div>
+        <h2>All recent key events came from Whangarei</h2>
+        <p class="lead">Every tracked action in the last 30 days came from the Whangarei page. As in the full period, Meta paid-social drove the most users but converted none of them.</p>
+      </div>
+    </div>
+
+    <div class="two-col wide-left" style="margin-bottom:var(--s2)">
+      <div class="chart-card">
+        <h3>Recent key events by type</h3>
+        <p class="csub">Tracked actions over the last 30 days. Values are shown on every bar.</p>
+        <div class="chart-box"><canvas id="keyEvents30Chart"></canvas></div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table class="data" style="min-width:0">
+            <thead>
+              <tr><th>Action</th><th><span class="cellhead"><i class="swatch sw-w"></i>Whangarei</span></th><th><span class="cellhead"><i class="swatch sw-f"></i>Franklin</span></th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Form submit</td><td class="col-w">13</td><td class="col-f">0</td></tr>
+              <tr><td>Dealer email</td><td class="col-w">2</td><td class="col-f">0</td></tr>
+              <tr><td>Dealer phone</td><td class="col-w">1</td><td class="col-f">0</td></tr>
+            </tbody>
+            <tfoot><tr><td>Total key events</td><td>16</td><td>0</td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-bottom:var(--s2)">
+      <div class="big">65%</div>
+      <div class="ctxt">Meta paid-social drove 373 of Whangarei's 567 active users in the last 30 days, roughly <b>65% of the page's audience</b>, yet produced <b>0 key events</b>. This pulled the page's overall engagement rate down. Organic and direct channels were responsible for most of the meaningful actions.</div>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:var(--s2)">
+      <h3>Whangarei recent traffic by source</h3>
+      <p class="csub">Bars show active users on the left axis. The line shows key events on the right axis. Meta paid-social is the tallest bar at zero key events.</p>
+      <div class="chart-box tall"><canvas id="source30Chart"></canvas></div>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:var(--s2)">
+      <div class="subtable-title" style="padding:18px 18px 0"><i class="swatch sw-w"></i>Whangarei sources · last 30 days</div>
+      <div class="table-scroll">
+        <table class="data">
+          <thead>
+            <tr><th>Source / medium</th><th>Users</th><th>Views</th><th>Eng. rate</th><th>Key events</th></tr>
+          </thead>
+          <tbody>
+            <tr class="row-flag"><td>meta / paid-social <span class="rowtag warn">Review</span></td><td>373</td><td>443</td><td>23.2%</td><td>0</td></tr>
+            <tr class="row-good"><td>whangarei / organic <span class="rowtag good">Top converter</span></td><td>69</td><td>123</td><td>93.2%</td><td>8</td></tr>
+            <tr><td>google / organic</td><td>43</td><td>82</td><td>82.5%</td><td>1</td></tr>
+            <tr><td>fb / paid</td><td>22</td><td>30</td><td>36.0%</td><td>0</td></tr>
+            <tr><td>(direct) / (none)</td><td>20</td><td>49</td><td>75.9%</td><td>3</td></tr>
+            <tr><td>google / cpc</td><td>10</td><td>28</td><td>85.7%</td><td>0</td></tr>
+            <tr><td>facebook.com / referral</td><td>8</td><td>8</td><td>37.5%</td><td>0</td></tr>
+            <tr><td>m.facebook.com / referral</td><td>6</td><td>6</td><td>0.0%</td><td>0</td></tr>
+            <tr><td>campaign-monitor / email</td><td>4</td><td>6</td><td>77.8%</td><td>1</td></tr>
+            <tr><td>nz.search.yahoo.com / referral</td><td>3</td><td>5</td><td>100.0%</td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="tl-note">A detailed Franklin source breakdown for the last 30 days was not provided, so none is shown here. The page total for the same window is <b>22 active users, 49 views, a 96.15% engagement rate and 0 key events</b>.</p>
+  </div>
+</section>
+
+<!-- ============ 11 · BUSINESS DRIVERS ============ -->
+<section class="section alt" id="drivers">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">12</div>
+      <div class="hgroup">
+        <div class="eyebrow">Business drivers</div>
+        <h2>Why Whangarei outperforms Franklin</h2>
+        <p class="lead">This is a strategic interpretation of the GA4 patterns above, not a new set of figures. It explains the gap in business outcomes through four observable differences: marketing activity, traffic distribution, conversion design and how those combine.</p>
+      </div>
+    </div>
+
+    <div class="drivers">
+
+      <article class="driver">
+        <div class="driver-head"><span class="driver-letter">A</span><h3>Marketing activity difference</h3></div>
+        <div class="driver-cols">
+          <div class="driver-col w">
+            <div class="dc-title"><i class="swatch sw-w"></i>Whangarei</div>
+            <ul>
+              <li>Heavy Meta paid-social traffic from Facebook and Instagram campaigns</li>
+              <li>Strong Google organic presence</li>
+              <li>Higher overall campaign investment and visibility</li>
+            </ul>
+          </div>
+          <div class="driver-col f">
+            <div class="dc-title"><i class="swatch sw-f"></i>Franklin</div>
+            <ul>
+              <li>Mostly organic traffic</li>
+              <li>No significant paid social push</li>
+              <li>No strong acquisition campaigns</li>
+            </ul>
+          </div>
+        </div>
+        <div class="driver-key"><span class="kl">Key interpretation</span>Whangarei is actively being pushed into the market while Franklin is not. The 373 users from Meta paid-social, against Franklin's near-zero paid acquisition, is the clearest signal of that difference.</div>
+      </article>
+
+      <article class="driver">
+        <div class="driver-head"><span class="driver-letter">B</span><h3>Traffic distribution difference</h3></div>
+        <div class="driver-cols">
+          <div class="driver-col w">
+            <div class="dc-title"><i class="swatch sw-w"></i>Whangarei traffic mix</div>
+            <ul>
+              <li>High-volume Meta paid-social traffic, low conversion quality</li>
+              <li>Strong organic search traffic, high conversion quality</li>
+              <li>Strong direct traffic</li>
+            </ul>
+          </div>
+          <div class="driver-col f">
+            <div class="dc-title"><i class="swatch sw-f"></i>Franklin traffic mix</div>
+            <ul>
+              <li>Small organic traffic only</li>
+              <li>Limited paid acquisition</li>
+              <li>No scale in acquisition channels</li>
+            </ul>
+          </div>
+        </div>
+        <div class="driver-key"><span class="kl">Key interpretation</span>Whangarei has both scale and intent in its traffic. Franklin has only a small amount of high-intent traffic. Scale combined with intent is what produces measurable customer actions.</div>
+      </article>
+
+      <article class="driver">
+        <div class="driver-head"><span class="driver-letter">C</span><h3>Conversion architecture difference</h3></div>
+        <div class="driver-cols">
+          <div class="driver-col w">
+            <div class="dc-title"><i class="swatch sw-w"></i>Whangarei, built to convert</div>
+            <ul>
+              <li>Clear calls to action: book a test ride, call, email</li>
+              <li>Multiple contact methods</li>
+              <li>Step-by-step explanation</li>
+              <li>Trust elements: customer reviews, warranty and a personal "Meet Graham" introduction</li>
+              <li>Localised messaging for Northland</li>
+            </ul>
+          </div>
+          <div class="driver-col f">
+            <div class="dc-title"><i class="swatch sw-f"></i>Franklin, more informational</div>
+            <ul>
+              <li>Less aggressive conversion structure</li>
+              <li>Lower call-to-action density</li>
+              <li>Fewer guided user actions</li>
+            </ul>
+          </div>
+        </div>
+        <div class="driver-key"><span class="kl">Key interpretation</span>Whangarei is optimised for lead generation, Franklin is not. The spread of Whangarei key events across form, phone and email maps directly to its multiple contact paths.</div>
+      </article>
+
+      <article class="driver">
+        <div class="driver-head"><span class="driver-letter">D</span><h3>Outcome impact, where it all connects</h3></div>
+        <p class="driver-single">The three differences above compound. More traffic on its own would not convert without a page built to capture it, and a strong page on its own would not produce volume without traffic. Whangarei has both, plus a conversion structure to turn visits into actions. That chain is what shows up in the key event totals.</p>
+        <div class="driver-cols">
+          <div class="driver-col w">
+            <div class="dc-title"><i class="swatch sw-w"></i>Why Whangarei wins</div>
+            <ul>
+              <li>It receives more traffic, especially paid social and organic</li>
+              <li>It has a stronger conversion-focused design</li>
+              <li>It converts visitors into measurable actions: form_submit, phone and email</li>
+            </ul>
+          </div>
+          <div class="driver-col f">
+            <div class="dc-title"><i class="swatch sw-f"></i>Where Franklin wins</div>
+            <ul>
+              <li>Higher engagement rate</li>
+              <li>Longer time on page</li>
+              <li>But it lacks scale</li>
+              <li>And it lacks conversions</li>
+            </ul>
+          </div>
+        </div>
+        <div class="driver-key"><span class="kl">Key interpretation</span>Franklin engages the few visitors it gets, but without scale or a conversion-focused structure that engagement does not turn into leads. Whangarei turns traffic into actions.</div>
+      </article>
+
+      <article class="driver">
+        <div class="driver-head"><span class="driver-letter">E</span><h3>The correct way to read this result</h3></div>
+        <p class="driver-single">A single-cause explanation would be misleading. Whangarei's stronger performance should not be attributed to page design alone, because traffic volume and acquisition strategy are doing a large share of the work.</p>
+        <div class="driver-key"><span class="kl">Correct explanation</span>Whangarei's stronger performance is driven by a combination of higher marketing activity, a better traffic acquisition strategy and a stronger conversion-focused page structure. Remove any one of these and the advantage narrows.</div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12 · WHY SUMMARY ============ -->
+<section class="section" id="why">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">13</div>
+      <div class="hgroup">
+        <div class="eyebrow">In short</div>
+        <h2>Why Whangarei is outperforming Franklin</h2>
+        <p class="lead">The same reasoning, condensed to the three differences that matter and the outcome they produce.</p>
+      </div>
+    </div>
+
+    <div class="why-card">
+      <div class="why-top">
+        <div class="we">Summary</div>
+        <h3>Three differences, one outcome</h3>
+      </div>
+      <div class="why-grid">
+        <div class="why-block">
+          <div class="wn">1</div>
+          <h4>Marketing intensity difference</h4>
+          <p>Whangarei is an active marketing focus, with paid social and strong organic visibility. Franklin runs on minimal acquisition activity.</p>
+        </div>
+        <div class="why-block">
+          <div class="wn">2</div>
+          <h4>Traffic volume and quality difference</h4>
+          <p>Whangarei combines large reach with high-intent organic and direct visitors. Franklin has high-intent traffic but no scale.</p>
+        </div>
+        <div class="why-block">
+          <div class="wn">3</div>
+          <h4>Conversion optimisation difference</h4>
+          <p>The Whangarei page is built to convert, with clear calls to action and multiple contact paths. The Franklin page is more informational.</p>
+        </div>
+      </div>
+      <div class="why-concl">Whangarei wins on business outcomes, the leads and customer actions that matter most. Franklin wins on engagement quality but lacks the scale and conversion flow to turn that into measurable results.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 · INSIGHTS ============ -->
+<section class="section alt" id="insights">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">14</div>
+      <div class="hgroup">
+        <div class="eyebrow">What the data tells us</div>
+        <h2>Five findings that explain the gap</h2>
+        <p class="lead">Read together, the 90 day and 30 day views point to the same conclusion. The Whangarei page is converting more visitors into customer actions, the strongest of that traffic is organic, and one paid channel is dragging the averages down.</p>
+      </div>
+    </div>
+
+    <div class="insight-grid">
+      <article class="insight green">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#117a29" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg></div>
+        <h3>Whangarei is stronger for customer actions</h3>
+        <p>It is the page doing the converting in both windows, across forms, phone clicks and email clicks rather than a single action type.</p>
+        <div class="metric"><b>38</b> key events in 90 days · <b>16</b> in the last 30 days</div>
+      </article>
+
+      <article class="insight navy">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#34507a" aria-hidden="true"><path d="M4 18a8 8 0 0 1 16 0"/><path d="M12 18l4.2-4.2"/><circle cx="12" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg></div>
+        <h3>Franklin has quality but limited scale</h3>
+        <p>Its engagement rate and average engagement time are higher, yet the audience is small enough that meaningful actions barely register.</p>
+        <div class="metric"><b>95.35%</b> engagement rate, but only <b>1</b> key event in 90 days</div>
+      </article>
+
+      <article class="insight gold">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#9a7d00" aria-hidden="true"><path d="M12 4 2.5 20.5h19L12 4Z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.8" r="1" fill="currentColor" stroke="none"/></svg></div>
+        <h3>Meta paid-social is the quality issue</h3>
+        <p>It drove the largest share of Whangarei traffic but produced no key events, which pulls the page engagement rate down and warrants a separate review.</p>
+        <div class="metric"><b>373</b> users from Meta, <b>0</b> key events</div>
+      </article>
+
+      <article class="insight green">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#117a29" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.3-4.3"/></svg></div>
+        <h3>Organic search is the best growth driver</h3>
+        <p>Local Whangarei organic traffic combined the strongest engagement with the highest key event count of any single source in the 90 day window.</p>
+        <div class="metric">whangarei / organic: <b>95.2%</b> rate, <b>15</b> key events</div>
+      </article>
+
+      <article class="insight gold">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#9a7d00" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M8 3.3v3.4M16 3.3v3.4"/><circle cx="16" cy="14.7" r="1.6" fill="currentColor" stroke="none"/></svg></div>
+        <h3>The timeline matters</h3>
+        <p>Whangarei was not brand new in this period. It held baseline traffic since January, and the real surge began mid-June, so growth and design should not be read as the same thing.</p>
+        <div class="metric">Baseline since <b>Jan 1</b> · surge from <b>Jun 13</b></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12 · RECOMMENDATIONS ============ -->
+<section class="section" id="recommendations">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">15</div>
+      <div class="hgroup">
+        <div class="eyebrow">What to do next</div>
+        <h2>Seven recommendations</h2>
+        <p class="lead">Practical next steps based on the figures above. They keep what is working, fix the channel that is not, and set up a cleaner comparison for the future.</p>
+      </div>
+    </div>
+
+    <div class="rec-list">
+      <div class="rec">
+        <div class="n">1</div>
+        <div><div class="rt">Keep refining the newer Whangarei page structure</div><div class="rd">It is driving significantly more business-value actions than the older Franklin page, so the newer layout is the right base to build on.</div></div>
+      </div>
+      <div class="rec">
+        <div class="n">2</div>
+        <div><div class="rt">Do not credit design alone for the difference</div><div class="rd">Traffic source mix is a major factor here. Meta paid-social pushed high-volume, low-quality traffic to Whangarei, which inflates the raw totals.</div></div>
+      </div>
+      <div class="rec">
+        <div class="n">3</div>
+        <div><div class="rt">Review Meta paid-social end to end</div><div class="rd">Check targeting, creative, landing-page message match, audience intent and campaign objective. The current Meta traffic is not converting.</div></div>
+      </div>
+      <div class="rec">
+        <div class="n">4</div>
+        <div><div class="rt">Prioritise high-intent channels</div><div class="rd">Local organic search, Google organic, direct and paid search are producing stronger engagement and the key events. Put budget and attention there.</div></div>
+      </div>
+      <div class="rec">
+        <div class="n">5</div>
+        <div><div class="rt">Investigate why Franklin visitors are so engaged</div><div class="rd">Franklin may have content, audience intent or source-quality signals worth applying to other dealer pages, even though its volume is low.</div></div>
+      </div>
+      <div class="rec">
+        <div class="n">6</div>
+        <div><div class="rt">Track phone, email and form as the success actions</div><div class="rd">Treat dealer_phone, dealer_email and form_submit as the primary measures of dealer-page performance going forward.</div></div>
+      </div>
+      <div class="rec">
+        <div class="n">7</div>
+        <div><div class="rt">Run a cleaner test next time</div><div class="rd">Apply the newer design to more dealer pages and compare them over the same date range with similar traffic sources, so design effect can be separated from traffic effect.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13 · CONCLUSION ============ -->
+<section class="section alt" id="conclusion">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">16</div>
+      <div class="hgroup">
+        <div class="eyebrow">The bottom line</div>
+        <h2>Conclusion</h2>
+      </div>
+    </div>
+
+    <div class="conclusion">
+      <div class="ce">Summary judgement</div>
+      <h2>Whangarei is the stronger performer for customer interaction today</h2>
+      <p>The newer Whangarei dealer page is currently the stronger performer for customer interaction and business-value actions. It produces substantially more form submissions, phone clicks and email clicks than Franklin in both the 90 day and recent 30 day views. Franklin has stronger engagement quality, but its traffic volume is low and it produced no key events in the last 30 days.</p>
+      <p>The main caveat is traffic mix. Meta paid-social is driving large volumes of low-quality traffic to Whangarei, while organic and direct traffic are producing the strongest outcomes. The right reading is that Whangarei is winning on business actions now, not that the design alone is responsible.</p>
+      <p>Whangarei's higher traffic volume was heavily influenced by the Meta paid-social campaign <span class="campaign-id">2606-northland-agent-landing-page-test</span>. The campaign explains the sudden 13 June surge and the 14 June peak. Because Meta paid-social generated 0 key events, the strongest business-value interactions came from other channels, especially organic, direct and email traffic. The correct conclusion is that Whangarei is outperforming Franklin on total customer actions, but the traffic spike itself was campaign-driven and not all of that traffic was high quality.</p>
+      <div class="signoff"><span class="ftag">MeloYelo</span><span>Dealer Page Performance Comparison · GA4 and GA4 Advisor</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14 · METHODOLOGY ============ -->
+<section class="section" id="methodology">
+  <div class="container">
+    <div class="section-head">
+      <div class="sec-index">17</div>
+      <div class="hgroup">
+        <div class="eyebrow">How this was put together</div>
+        <h2>Methodology and notes</h2>
+        <p class="lead">The detail behind the figures, including the date ranges used, the page paths, and the limits of what this comparison can and cannot prove.</p>
+      </div>
+    </div>
+
+    <div class="method">
+      <dl>
+        <div><dt>Data source</dt><dd>Google Analytics 4 and GA4 Advisor outputs.</dd></div>
+        <div><dt>Main date range</dt><dd>March 21, 2026 to June 18, 2026 (90 days).</dd></div>
+        <div><dt>Recent date range</dt><dd>May 20, 2026 to June 18, 2026 (30 days).</dd></div>
+        <div><dt>Timeline review range</dt><dd>January 1, 2026 to June 18, 2026.</dd></div>
+        <div><dt>Page paths used</dt><dd>/dealers/whangarei/ and /dealers/franklin/. The original request referred to /agents/whangarei and /agents/franklin, but GA4 identified the dealer paths as the correct pages.</dd></div>
+        <div><dt>Study type</dt><dd>This is an observational comparison, not a controlled A/B test. Traffic source mix, campaign activity and audience quality can all influence the results.</dd></div>
+        <div><dt>Design launch date</dt><dd>Public page research confirms the current structure difference between the pages, but does not confirm the exact launch date of the newer design.</dd></div>
+        <div><dt>Traffic baseline</dt><dd>GA4 indicates baseline Whangarei traffic existed since January 1, 2026, with a major traffic surge beginning June 13, 2026.</dd></div>
+      </dl>
+      <p class="note">Figures are shown exactly as reported by GA4. No values were rounded in the detailed tables, no missing values were estimated, and no daily trend data was fabricated. Where a detailed Franklin 30 day source breakdown was not available, it has been left out rather than invented.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer">
+  <div class="container inner">
+    <div class="foot-brand">
+      <img class="foot-logo" src="data:image/png;base64,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" alt="MeloYelo e-bikes logo">
+      <p>Dealer page performance analytics prepared for MeloYelo.nz. This report compares customer interaction and business-action performance across two dealer page designs using Google Analytics 4.</p>
+    </div>
+    <div class="foot-col">
+      <h4>Report</h4>
+      <ul>
+        <li><span class="fk">Title</span><br>Dealer Page Performance Comparison</li>
+        <li><span class="fk">Client</span><br>MeloYelo.nz</li>
+        <li><span class="fk">Main period</span><br>21 Mar to 18 Jun 2026</li>
+        <li><span class="fk">Recent period</span><br>20 May to 18 Jun 2026</li>
+        <li><span class="fk">Source</span><br>GA4 and GA4 Advisor</li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h4>Sections</h4>
+      <ul>
+        <li><a href="#exec">Executive summary</a></li>
+        <li><a href="#timeline">Timeline context</a></li>
+        <li><a href="#campaign">Campaign spike</a></li>
+        <li><a href="#table">90 day performance</a></li>
+        <li><a href="#sources">Traffic sources</a></li>
+        <li><a href="#recent">Recent 30 days</a></li>
+        <li><a href="#drivers">Business drivers</a></li>
+        <li><a href="#insights">Insights</a></li>
+        <li><a href="#recommendations">Recommendations</a></li>
+        <li><a href="#conclusion">Conclusion</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="container">
+    <div class="foot-bottom">
+      <p>Confidential. Prepared for internal MeloYelo.nz review. Figures sourced from Google Analytics 4 and subject to GA4 data processing and attribution.</p>
+      <span class="foot-tag">MeloYelo · just mad about e-bikes</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  if (typeof Chart === "undefined") { return; }
+
+  var INK = "#1a2230", INK_SOFT = "#5b6472", INK_FAINT = "#8b93a1";
+  var GREEN = "#1caf32", NAVY = "#34507a", LINE = "#eceff3";
+
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var nf = new Intl.NumberFormat("en-NZ");
+  var fmtInt = function (v) { return nf.format(v); };
+
+  Chart.defaults.font.family = '"Heebo",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif';
+  Chart.defaults.font.size = 12;
+  Chart.defaults.color = INK_SOFT;
+
+  // per-chart label config, kept OUT of chart.options to avoid Chart.js scriptable-option proxy
+  var VL_CFG = {
+    keyEventsChart: { only: "bar" },
+    whangareiSourceChart: { only: "line", skipZero: true },
+    orgPaidChart: { only: "bar" },
+    keyEvents30Chart: { only: "bar" },
+    source30Chart: { only: "line", skipZero: true },
+    campaignDailyChart: { only: "bar" }
+  };
+
+  // value-label plugin, no external dependency
+  var valueLabels = {
+    id: "valueLabels",
+    afterDatasetsDraw: function (chart) {
+      var o = VL_CFG[(chart.canvas && chart.canvas.id) || ""] || {};
+      var only = o.only || "all", skipZero = !!o.skipZero;
+      var ctx = chart.ctx;
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.font = '800 11px "Heebo", sans-serif';
+      chart.data.datasets.forEach(function (ds, di) {
+        var meta = chart.getDatasetMeta(di);
+        if (meta.hidden) { return; }
+        var isLine = (meta.type || ds.type) === "line";
+        var isBar = !isLine;
+        if (only === "bar" && !isBar) { return; }
+        if (only === "line" && !isLine) { return; }
+        meta.data.forEach(function (el, i) {
+          var raw = ds.data[i];
+          if (raw === null || raw === undefined) { return; }
+          var val = (typeof raw === "object" && raw.y !== undefined) ? raw.y : raw;
+          if (skipZero && val === 0) { return; }
+          var x = el.x, y = isLine ? (el.y - 9) : (el.y - 5);
+          var txt = fmtInt(val);
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = "rgba(255,255,255,.92)";
+          ctx.strokeText(txt, x, y);
+          ctx.fillStyle = isLine ? NAVY : INK;
+          ctx.fillText(txt, x, y);
+        });
+      });
+      ctx.restore();
+    }
+  };
+
+  var baseScales = function (leftTitle, rightTitle) {
+    var s = {
+      x: { grid: { display: false }, border: { color: LINE },
+           ticks: { color: INK_SOFT, font: { size: 11, weight: "600" }, maxRotation: 0, autoSkip: false } },
+      y: { beginAtZero: true, grace: "10%", border: { display: false },
+           grid: { color: LINE }, ticks: { color: INK_FAINT, precision: 0, padding: 6 },
+           title: { display: !!leftTitle, text: leftTitle || "", color: INK_FAINT,
+                    font: { size: 11, weight: "700" } } }
+    };
+    if (rightTitle) {
+      s.y1 = { beginAtZero: true, grace: "16%", position: "right", border: { display: false },
+               grid: { drawOnChartArea: false }, ticks: { color: NAVY, precision: 0, padding: 6 },
+               title: { display: true, text: rightTitle, color: NAVY, font: { size: 11, weight: "700" } } };
+    }
+    return s;
+  };
+
+  function legendBlock() { return { position: "top", align: "start",
+    labels: { usePointStyle: true, pointStyle: "rectRounded", boxWidth: 9, boxHeight: 9,
+              padding: 16, color: INK, font: { size: 12.5, weight: "600" } } }; }
+
+  function tipCfg() { return { backgroundColor: INK, padding: 11, cornerRadius: 4, titleColor: "#fff",
+    bodyColor: "#e3e7ee", borderColor: "rgba(255,255,255,.08)", borderWidth: 1, displayColors: true,
+    boxPadding: 5, callbacks: { label: function (c) {
+      return " " + c.dataset.label + ": " + fmtInt(c.parsed.y);
+    } } }; }
+
+  function padCfg() { return { padding: { top: 26, right: 10, left: 4, bottom: 2 } }; }
+
+  var barW = { borderRadius: 3, maxBarThickness: 48, categoryPercentage: 0.64, barPercentage: 0.88 };
+  var comboBar = { borderRadius: 3, maxBarThickness: 34, categoryPercentage: 0.6, barPercentage: 0.82 };
+  var lineStyle = { tension: 0.32, borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6,
+    pointBackgroundColor: NAVY, pointBorderColor: "#fff", pointBorderWidth: 1.5, fill: false };
+
+  function make(id, cfg) {
+    var c = document.getElementById(id);
+    if (c) { new Chart(c.getContext("2d"), cfg); }
+  }
+
+  // A. 90 day key events
+  make("keyEventsChart", {
+    type: "bar",
+    data: { labels: ["Form submit", "Dealer phone", "Dealer email"],
+      datasets: [
+        Object.assign({ label: "Whangarei", data: [27, 7, 4], backgroundColor: GREEN }, barW),
+        Object.assign({ label: "Franklin", data: [1, 0, 0], backgroundColor: NAVY }, barW)
+      ] },
+    options: { responsive: true, maintainAspectRatio: false, animation: reduce ? false : { duration: 520, easing: "easeOutQuart" }, transitions: { active: { animation: { duration: 0 } } }, layout: padCfg(),
+      plugins: { legend: legendBlock(), tooltip: tipCfg() },
+      scales: baseScales("Key events", null) },
+    plugins: [valueLabels]
+  });
+
+  // B. 90 day Whangarei sources, combo
+  make("whangareiSourceChart", {
+    type: "bar",
+    data: { labels: [["meta /", "paid-social"], ["whangarei /", "organic"], ["google /", "organic"],
+        ["google /", "cpc"], ["(direct) /", "(none)"], ["fb / paid"], ["facebook.com /", "referral"],
+        ["(not set)"], ["m.facebook.com /", "referral"], ["bing /", "organic"]],
+      datasets: [
+        Object.assign({ type: "bar", label: "Active users", yAxisID: "y",
+          data: [373, 148, 88, 44, 23, 22, 8, 6, 6, 4], backgroundColor: "rgba(28,175,50,.88)" }, comboBar),
+        Object.assign({ type: "line", label: "Key events", yAxisID: "y1",
+          data: [0, 15, 3, 2, 3, 0, 0, 0, 0, 0], borderColor: NAVY }, lineStyle)
+      ] },
+    options: { responsive: true, maintainAspectRatio: false, animation: reduce ? false : { duration: 520, easing: "easeOutQuart" }, transitions: { active: { animation: { duration: 0 } } }, layout: padCfg(),
+      plugins: { legend: legendBlock(), tooltip: tipCfg() },
+      scales: baseScales("Active users", "Key events") },
+    plugins: [valueLabels]
+  });
+
+  // C. organic vs paid search key events
+  make("orgPaidChart", {
+    type: "bar",
+    data: { labels: ["Organic search", "Paid search"],
+      datasets: [
+        Object.assign({ label: "Whangarei", data: [18, 2], backgroundColor: GREEN }, barW),
+        Object.assign({ label: "Franklin", data: [1, 0], backgroundColor: NAVY }, barW)
+      ] },
+    options: { responsive: true, maintainAspectRatio: false, animation: reduce ? false : { duration: 520, easing: "easeOutQuart" }, transitions: { active: { animation: { duration: 0 } } }, layout: padCfg(),
+      plugins: { legend: legendBlock(), tooltip: tipCfg() },
+      scales: baseScales("Key events", null) },
+    plugins: [valueLabels]
+  });
+
+  // D. 30 day key events
+  make("keyEvents30Chart", {
+    type: "bar",
+    data: { labels: ["Form submit", "Dealer email", "Dealer phone"],
+      datasets: [
+        Object.assign({ label: "Whangarei", data: [13, 2, 1], backgroundColor: GREEN }, barW),
+        Object.assign({ label: "Franklin", data: [0, 0, 0], backgroundColor: NAVY }, barW)
+      ] },
+    options: { responsive: true, maintainAspectRatio: false, animation: reduce ? false : { duration: 520, easing: "easeOutQuart" }, transitions: { active: { animation: { duration: 0 } } }, layout: padCfg(),
+      plugins: { legend: legendBlock(), tooltip: tipCfg() },
+      scales: baseScales("Key events", null) },
+    plugins: [valueLabels]
+  });
+
+  // E. 30 day Whangarei sources, combo
+  make("source30Chart", {
+    type: "bar",
+    data: { labels: [["meta /", "paid-social"], ["whangarei /", "organic"], ["google /", "organic"],
+        ["fb / paid"], ["(direct) /", "(none)"], ["google /", "cpc"], ["facebook.com /", "referral"],
+        ["m.facebook.com /", "referral"], ["campaign-", "monitor / email"], ["nz.search.", "yahoo / referral"]],
+      datasets: [
+        Object.assign({ type: "bar", label: "Active users", yAxisID: "y",
+          data: [373, 69, 43, 22, 20, 10, 8, 6, 4, 3], backgroundColor: "rgba(28,175,50,.88)" }, comboBar),
+        Object.assign({ type: "line", label: "Key events", yAxisID: "y1",
+          data: [0, 8, 1, 0, 3, 0, 0, 0, 1, 0], borderColor: NAVY }, lineStyle)
+      ] },
+    options: { responsive: true, maintainAspectRatio: false, animation: reduce ? false : { duration: 520, easing: "easeOutQuart" }, transitions: { active: { animation: { duration: 0 } } }, layout: padCfg(),
+      plugins: { legend: legendBlock(), tooltip: tipCfg() },
+      scales: baseScales("Active users", "Key events") },
+    plugins: [valueLabels]
+  });
+
+  // F. Daily active users vs Meta campaign users, 10 to 18 June
+  make("campaignDailyChart", {
+    type: "bar",
+    data: { labels: ["10 Jun", "11 Jun", "12 Jun", "13 Jun", "14 Jun", "15 Jun", "16 Jun", "17 Jun", "18 Jun"],
+      datasets: [
+        Object.assign({ label: "All active users", data: [3, 6, 4, 50, 117, 86, 84, 50, 70], backgroundColor: GREEN }, barW),
+        Object.assign({ label: "Meta campaign users", data: [0, 0, 0, 28, 108, 78, 72, 39, 56], backgroundColor: "#e08a00" }, barW)
+      ] },
+    options: { responsive: true, maintainAspectRatio: false, animation: reduce ? false : { duration: 520, easing: "easeOutQuart" }, transitions: { active: { animation: { duration: 0 } } }, layout: padCfg(),
+      plugins: { legend: legendBlock(), tooltip: tipCfg() },
+      scales: baseScales("Active users", null) },
+    plugins: [valueLabels]
+  });
+})();
+</script>
+
+<script>
+(function () {
+  "use strict";
+
+  var PERIODS = {
+    "90d": {
+      hdr: "90 days to 18 Jun 2026",
+      wtag: '<span class="d"></span>90 day window · 21 Mar to 18 Jun 2026',
+      kpis: [
+        { label: "Active users", w: "904", f: "75", unit: "", leader: "w", delta: "12x", wbar: 100, fbar: 8.3 },
+        { label: "Views", w: "1,699", f: "169", unit: "", leader: "w", delta: "10x", wbar: 100, fbar: 9.9 },
+        { label: "Avg engagement time", w: "31.92", f: "69.79", unit: "s", leader: "f", delta: "2.2x", wbar: 45.7, fbar: 100 },
+        { label: "Engagement rate", w: "63.86", f: "95.35", unit: "%", leader: "f", delta: "+31.5 pts", wbar: 67, fbar: 100 },
+        { label: "Event count", w: "5,211", f: "541", unit: "", leader: "w", delta: "9.6x", wbar: 100, fbar: 10.4 },
+        { label: "Key events", w: "38", f: "1", unit: "", leader: "w", delta: "38 vs 1", wbar: 100, fbar: 2.6 }
+      ],
+      table: [
+        { label: "Active users", w: "904", f: "75", leader: "w" },
+        { label: "Views", w: "1,699", f: "169", leader: "w" },
+        { label: "Average engagement time", w: "31.92s", f: "69.79s", leader: "f" },
+        { label: "Engagement rate", w: "63.86%", f: "95.35%", leader: "f" },
+        { label: "Event count", w: "5,211", f: "541", leader: "w" },
+        { label: "Key events", w: "38", f: "1", leader: "w" },
+        { label: "Total user engagement", w: "8h 00m", f: "1h 27m", leader: "w" }
+      ]
+    },
+    "30d": {
+      hdr: "30 days to 18 Jun 2026",
+      wtag: '<span class="d"></span>30 day window · 20 May to 18 Jun 2026',
+      kpis: [
+        { label: "Active users", w: "567", f: "22", unit: "", leader: "w", delta: "26x", wbar: 100, fbar: 3.9 },
+        { label: "Views", w: "817", f: "49", unit: "", leader: "w", delta: "17x", wbar: 100, fbar: 6.0 },
+        { label: "Avg engagement time", w: "19.72", f: "55.82", unit: "s", leader: "f", delta: "2.8x", wbar: 35.3, fbar: 100 },
+        { label: "Engagement rate", w: "43.20", f: "96.15", unit: "%", leader: "f", delta: "+53 pts", wbar: 44.9, fbar: 100 },
+        { label: "Event count", w: "2,571", f: "164", unit: "", leader: "w", delta: "16x", wbar: 100, fbar: 6.4 },
+        { label: "Key events", w: "16", f: "0", unit: "", leader: "w", delta: "16 vs 0", wbar: 100, fbar: 0 }
+      ],
+      table: [
+        { label: "Active users", w: "567", f: "22", leader: "w" },
+        { label: "Views", w: "817", f: "49", leader: "w" },
+        { label: "Average engagement time", w: "19.72s", f: "55.82s", leader: "f" },
+        { label: "Engagement rate", w: "43.20%", f: "96.15%", leader: "f" },
+        { label: "Event count", w: "2,571", f: "164", leader: "w" },
+        { label: "Key events", w: "16", f: "0", leader: "w" },
+        { label: "Total user engagement", w: "3h 06m", f: "20m 28s", leader: "w" }
+      ]
+    }
+  };
+
+  function kpiCard(k) {
+    var u = k.unit ? "<small>" + k.unit + "</small>" : "";
+    var tagCls = k.leader === "w" ? "green" : "navy";
+    var tagName = k.leader === "w" ? "Whangarei" : "Franklin";
+    return '<div class="kpi">'
+      + '<div class="kpi-top"><span class="kpi-label">' + k.label + '</span>'
+      + '<span class="kpi-tag ' + tagCls + '">' + tagName + ' <span class="delta">' + k.delta + '</span></span></div>'
+      + '<div class="kpi-row"><span class="kpi-name"><i class="dot dot-w"></i>Whangarei</span>'
+      + '<span class="kpi-bar"><i class="bar-w" style="width:' + k.wbar + '%"></i></span>'
+      + '<span class="kpi-val">' + k.w + u + '</span></div>'
+      + '<div class="kpi-row"><span class="kpi-name"><i class="dot dot-f"></i>Franklin</span>'
+      + '<span class="kpi-bar"><i class="bar-f" style="width:' + k.fbar + '%"></i></span>'
+      + '<span class="kpi-val">' + k.f + u + '</span></div>'
+      + '</div>';
+  }
+
+  function tableRow(r) {
+    var chipCls = r.leader === "w" ? "green" : "navy";
+    var chipName = r.leader === "w" ? "Whangarei" : "Franklin";
+    return '<tr><td>' + r.label + '</td><td class="col-w">' + r.w + '</td><td class="col-f">' + r.f + '</td>'
+      + '<td><span class="chip ' + chipCls + '">' + chipName + '</span></td></tr>';
+  }
+
+  var grid = document.getElementById("kpiGrid");
+  var body = document.getElementById("coreMetricsBody");
+  var kpiWtag = document.getElementById("kpiWtag");
+  var tableWtag = document.getElementById("tableWtag");
+  var hdrPeriod = document.getElementById("hdrPeriod");
+  var filter = document.getElementById("periodFilter");
+  if (!grid || !body || !filter) { return; }
+  var buttons = filter.querySelectorAll(".pill");
+
+  function render(period) {
+    var d = PERIODS[period];
+    if (!d) { return; }
+    grid.innerHTML = d.kpis.map(kpiCard).join("");
+    body.innerHTML = d.table.map(tableRow).join("");
+    if (kpiWtag) { kpiWtag.innerHTML = d.wtag; }
+    if (tableWtag) { tableWtag.innerHTML = d.wtag; }
+    if (hdrPeriod) { hdrPeriod.textContent = d.hdr; }
+    for (var i = 0; i < buttons.length; i++) {
+      var on = buttons[i].getAttribute("data-period") === period;
+      buttons[i].classList.toggle("primary", on);
+      buttons[i].setAttribute("aria-pressed", on ? "true" : "false");
+    }
+  }
+
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].addEventListener("click", function () {
+      render(this.getAttribute("data-period"));
+    });
+  }
+
+  render("90d");
+})();
+</script>
+</body>
+</html>
